@@ -1,0 +1,185 @@
+# RemoteComposeExample — Render Acceptance Gate (iOS) — ACTIVE
+# Owner: test-1. App: dev-1. STATUS: 🟡 STAGED — bundle-id + PRIMARY hook-gate + per-doc bindings LOCKED;
+#   ALL 16 docs gated (PO: demo app → every tappable doc must render; A=new DSL-builder code, B=new load path).
+#   ONLY the 5 nav-CONTAINER testTags PENDING — fill via inspect_screen at the Phase-1 cue, drop `staged`.
+#   Convention (dev-1): list-item testTag = rc-docitem-<id>; after tap, rc-doc == <id>. testTagsAsResourceId=true.
+#   iOS caveats: edge-swipe RIGHT from left edge = iOS system-back → use `back`; off-screen items via scrollUntilVisible.
+# Run (on cue): ~/.maestro/bin/maestro --device <ios-udid> test example_render_gate_ios.yaml
+appId: com.tneff.remotecomposeexample.RemoteComposeExample
+name: "RemoteComposeExample render gate (iOS)"
+tags: [example, acceptance, render]
+---
+- launchApp: { clearState: true }
+- assertVisible: { id: "rc-menu" }
+
+# ══════════ AREA A — Creation-DSL (6 docs — ALL gated; first/middle/last marked) ══════════
+- tapOn: { id: "rc-area-creation_dsl" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_oval (first) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_oval" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_oval" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_oval" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_text ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_text" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_text" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_text" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_gradient ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_gradient" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_gradient" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_gradient" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_clock (middle) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_clock" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_clock" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_clock" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_tap ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_tap" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_tap" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_tap" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- dsl_compose_card (last) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-dsl_compose_card" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-dsl_compose_card" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "dsl_compose_card" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }                 # list -> menu (rc-back button, NOT system back)
+
+# ══════════ AREA B — normal RC (10 docs — ALL gated; first/middle/last marked) ══════════
+- tapOn: { id: "rc-area-bundled_rc" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_box (first) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_box" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_box" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_box" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_text ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_text" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_text" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_text" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_gradient ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_gradient" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_gradient" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_gradient" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_moon ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_moon" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_moon" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_moon" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_clock ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_clock" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_clock" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_clock" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_confetti (middle) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_confetti" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_confetti" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_confetti" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_scroll ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_scroll" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_scroll" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_scroll" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_click ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_click" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_click" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_click" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_pie ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_pie" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_pie" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_pie" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+# --- rc_compass (last) ---
+- scrollUntilVisible: { element: { id: "rc-docitem-rc_compass" }, direction: DOWN }
+- tapOn: { id: "rc-docitem-rc_compass" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-doc", text: "rc_compass" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-back" }                 # list -> menu (rc-back button, NOT system back)
