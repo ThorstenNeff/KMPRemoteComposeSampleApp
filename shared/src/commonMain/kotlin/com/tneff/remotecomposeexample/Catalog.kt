@@ -12,8 +12,6 @@ import com.tneff.kmpremotecompose.remote.creation.createTextFromFloat
 import com.tneff.kmpremotecompose.remote.creation.document
 import com.tneff.kmpremotecompose.remote.creation.drawOval
 import com.tneff.kmpremotecompose.remote.creation.drawTextAnchored
-import com.tneff.kmpremotecompose.remote.creation.LayoutModifier
-import com.tneff.kmpremotecompose.remote.creation.box
 import com.tneff.kmpremotecompose.remote.creation.floatExpression
 import com.tneff.kmpremotecompose.remote.creation.paint
 import com.tneff.kmpremotecompose.remote.creation.setRootContentBehavior
@@ -24,6 +22,7 @@ import com.tneff.kmpremotecompose.creation.compose.RemoteBoxLeaf
 import com.tneff.kmpremotecompose.creation.compose.RemoteModifier
 import com.tneff.kmpremotecompose.creation.compose.RemoteRoot
 import com.tneff.kmpremotecompose.creation.compose.captureSingleRemoteDocument
+import com.tneff.kmpremotecompose.creation.compose.valueIntegerChange
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import remotecomposeexample.shared.generated.resources.Res
 
@@ -112,18 +111,23 @@ private fun clockDoc(): ByteArray = document(width = 300, height = 300, contentD
     drawTextAnchored(textId = t, x = cx, y = cy)
 }
 
-/** dsl_tap — a clickable box (procedural `LayoutModifier().background().click()` = MODIFIER_CLICK). Renders
- *  a distinct orange box + carries the click region; the counter value-change + its live interactivity land
- *  with the live-toggle phase (a static viewer can't show the tap response). */
-private fun tapDoc(): ByteArray = document(width = 300, height = 300, contentDescription = "Tappable Counter") {
-    setRootContentBehavior(ROOT_SCROLL_NONE, ROOT_ALIGNMENT_CENTER, ROOT_SIZING_SCALE, ROOT_SCALE_FIT)
-    box(
-        modifier = LayoutModifier()
-            .width(DimensionType.EXACT, 220f)
-            .height(DimensionType.EXACT, 120f)
-            .background(0xFFef6c00.toInt())
-            .click(),
-    ) {}
+/** dsl_tap — an interactive box that FIRES a click action on tap: `onTouchDown(valueIntegerChange(42,1))`
+ *  via the Compose-creation `RemoteModifier`. In live mode a tap runs the action → the library's
+ *  `rc-action-echo` reports "42=1" (the observable interactivity signal). NB: a free-running *incrementing*
+ *  counter would need an integer-expression-change action (`id=id+1`) the lib's creation-DSL doesn't yet
+ *  expose (even the corpus `c_modifier_on_click` is a fixed `id=1` set) — flagged to PO as a lib-DSL gap. */
+private suspend fun tapDoc(): ByteArray = captureSingleRemoteDocument(
+    width = 300, height = 300, contentDescription = "Tap Action",
+) {
+    RemoteRoot {
+        RemoteBoxLeaf(
+            modifier = RemoteModifier
+                .width(DimensionType.EXACT, 220f)
+                .height(DimensionType.EXACT, 120f)
+                .background(color = 0xFFEF6C00.toInt())
+                .onTouchDown(valueIntegerChange(valueId = 42, value = 1)),
+        )
+    }
 }
 
 /** dsl_compose_card — the Compose-Creation path: a styled card via `captureSingleRemoteDocument` +
@@ -151,7 +155,7 @@ val exampleCatalog: List<RcDocEntry> = listOf(
     RcDocEntry("dsl_text", "Styled Text", DocArea.CREATION_DSL, dsl { textDoc() }),
     RcDocEntry("dsl_gradient", "Gradient Fill", DocArea.CREATION_DSL, dsl { gradientDoc() }),
     RcDocEntry("dsl_clock", "Clock Face", DocArea.CREATION_DSL, dsl { clockDoc() }),
-    RcDocEntry("dsl_tap", "Tappable Counter", DocArea.CREATION_DSL, dsl { tapDoc() }),
+    RcDocEntry("dsl_tap", "Tap Action", DocArea.CREATION_DSL, dsl { tapDoc() }),
     RcDocEntry("dsl_compose_card", "Compose-DSL Card", DocArea.CREATION_DSL, dsl { composeCardDoc() }),
     // Area B — Bundled `.rc` (ids == dev-2 server pageIds).
     RcDocEntry("rc_box", "Box", DocArea.BUNDLED_RC, bundled("c_box")),
