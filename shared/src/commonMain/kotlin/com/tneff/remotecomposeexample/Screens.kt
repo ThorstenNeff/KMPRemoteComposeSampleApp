@@ -18,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -89,14 +90,36 @@ fun DocListScreen(area: DocArea, onEntry: (RcDocEntry, Boolean) -> Unit, onBack:
 /**
  * Viewer — renders the entry via [RemoteComposeApp]. [RcRouter.select] aligns the library's `rc-doc` hook to
  * the entry id (test-1's per-doc assert), while `loadRc` resolves the actual bytes (source-agnostic). The
- * library already surfaces the honest `rc-rendered` (drawCount>0) gate. testTags: `rc-viewer`, `rc-back`.
+ * library already surfaces the honest `rc-rendered` (drawCount>0) gate. testTags: `rc-viewer`, `rc-back`,
+ * `rc-live-toggle`.
+ *
+ * **Live toggle (REM-172):** flips [RcRouter.live], which the library's [RemoteComposeApp] reads to opt the
+ * render loop into advancing frame-time (clocks tick, confetti animates) AND to wire the live pointer
+ * gestures (REM-108) — so `dsl_tap`/`rc_click`/`rc_scroll` become interactive. Default **off** = the static
+ * deterministic frame (the Maestro render gate stays static); the user opts in for the live demo. Reset to
+ * off when leaving the viewer so the global flag never leaks into the next doc / the gate.
+ *
  * NB: `fromServer` is carried but resolves to the native source until S5 wires the Ktor client (fail-soft).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewerScreen(entry: RcDocEntry, onBack: () -> Unit) {
+    var live by remember { mutableStateOf(false) }
     LaunchedEffect(entry.id) { RcRouter.select(entry.id) }
-    Scaffold(topBar = { TopAppBar(title = { Text(entry.title) }, navigationIcon = { BackButton(onBack) }) }) { pad ->
+    LaunchedEffect(live) { RcRouter.live = live }
+    DisposableEffect(Unit) { onDispose { RcRouter.live = false } }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(entry.title) },
+                navigationIcon = { BackButton(onBack) },
+                actions = {
+                    Text("Live", modifier = Modifier.padding(end = 4.dp))
+                    Switch(checked = live, onCheckedChange = { live = it }, modifier = Modifier.testTag("rc-live-toggle"))
+                },
+            )
+        },
+    ) { pad ->
         Box(Modifier.padding(pad).fillMaxSize().testTag("rc-viewer")) {
             RemoteComposeApp(loadRc = { _ -> entry.source.resolveBytes() })
         }
