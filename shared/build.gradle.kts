@@ -50,6 +50,9 @@ kotlin {
             // REM-108-example P0: the RemoteCompose player/creation library (mavenLocal 0.1.0). Versions
             // match exactly (CMP 1.11.1 / Kotlin 2.4.0) so no resolution conflicts. Provides RemoteComposeApp.
             implementation("com.tneff.kmpremotecompose:shared:0.1.0")
+            // Phase-1 Area-A: the Compose-Creation DSL (captureSingleRemoteDocument + Remote* composables) for
+            // the dsl_compose_card entry — the Compose-creation path alongside the procedural document{}.
+            implementation("com.tneff.kmpremotecompose:creation-compose:0.1.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

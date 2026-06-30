@@ -15,8 +15,13 @@ import com.tneff.kmpremotecompose.remote.creation.drawTextAnchored
 import com.tneff.kmpremotecompose.remote.creation.floatExpression
 import com.tneff.kmpremotecompose.remote.creation.paint
 import com.tneff.kmpremotecompose.remote.creation.setRootContentBehavior
+import com.tneff.kmpremotecompose.remote.core.operations.layout.DimensionType
 import com.tneff.kmpremotecompose.remote.player.core.RemoteContext
 import com.tneff.kmpremotecompose.remote.wire.WireTypes
+import com.tneff.kmpremotecompose.creation.compose.RemoteBoxLeaf
+import com.tneff.kmpremotecompose.creation.compose.RemoteModifier
+import com.tneff.kmpremotecompose.creation.compose.RemoteRoot
+import com.tneff.kmpremotecompose.creation.compose.captureSingleRemoteDocument
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import remotecomposeexample.shared.generated.resources.Res
 
@@ -101,6 +106,21 @@ private fun clockDoc(): ByteArray = document(width = 300, height = 300, contentD
     drawTextAnchored(textId = t, x = cx, y = cy)
 }
 
+/** dsl_compose_card — the Compose-Creation path: a styled card via `captureSingleRemoteDocument` +
+ *  `RemoteBoxLeaf` (vs the procedural `document{}` builders above). Mirrors the creation-compose anchor tests. */
+private suspend fun composeCardDoc(): ByteArray = captureSingleRemoteDocument(
+    width = 300, height = 300, contentDescription = "Compose-DSL Card",
+) {
+    RemoteRoot {
+        RemoteBoxLeaf(
+            modifier = RemoteModifier
+                .width(DimensionType.EXACT, 220f)
+                .height(DimensionType.EXACT, 140f)
+                .background(color = 0xff6750a4.toInt()),
+        )
+    }
+}
+
 private fun bundled(name: String) = RcDocSource.BundledRc("files/rc/$name.rc")
 private fun dsl(build: suspend () -> ByteArray) = RcDocSource.DslBuilder(build)
 
@@ -112,7 +132,7 @@ val exampleCatalog: List<RcDocEntry> = listOf(
     RcDocEntry("dsl_gradient", "Gradient Fill", DocArea.CREATION_DSL, dsl { gradientDoc() }),
     RcDocEntry("dsl_clock", "Clock Face", DocArea.CREATION_DSL, dsl { clockDoc() }),
     RcDocEntry("dsl_tap", "Tappable Counter", DocArea.CREATION_DSL, dsl { ovalDoc() }), // TODO MODIFIER_CLICK+rcInteractive
-    RcDocEntry("dsl_compose_card", "Compose-DSL Card", DocArea.CREATION_DSL, dsl { ovalDoc() }), // TODO captureSingleRemoteDocument
+    RcDocEntry("dsl_compose_card", "Compose-DSL Card", DocArea.CREATION_DSL, dsl { composeCardDoc() }),
     // Area B — Bundled `.rc` (ids == dev-2 server pageIds).
     RcDocEntry("rc_box", "Box", DocArea.BUNDLED_RC, bundled("c_box")),
     RcDocEntry("rc_text", "Text Baseline", DocArea.BUNDLED_RC, bundled("text_baseline")),
