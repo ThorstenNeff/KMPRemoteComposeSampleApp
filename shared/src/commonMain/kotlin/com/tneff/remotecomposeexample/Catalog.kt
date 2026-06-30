@@ -12,6 +12,8 @@ import com.tneff.kmpremotecompose.remote.creation.createTextFromFloat
 import com.tneff.kmpremotecompose.remote.creation.document
 import com.tneff.kmpremotecompose.remote.creation.drawOval
 import com.tneff.kmpremotecompose.remote.creation.drawTextAnchored
+import com.tneff.kmpremotecompose.remote.creation.LayoutModifier
+import com.tneff.kmpremotecompose.remote.creation.box
 import com.tneff.kmpremotecompose.remote.creation.floatExpression
 import com.tneff.kmpremotecompose.remote.creation.paint
 import com.tneff.kmpremotecompose.remote.creation.setRootContentBehavior
@@ -106,6 +108,20 @@ private fun clockDoc(): ByteArray = document(width = 300, height = 300, contentD
     drawTextAnchored(textId = t, x = cx, y = cy)
 }
 
+/** dsl_tap — a clickable box (procedural `LayoutModifier().background().click()` = MODIFIER_CLICK). Renders
+ *  a distinct orange box + carries the click region; the counter value-change + its live interactivity land
+ *  with the live-toggle phase (a static viewer can't show the tap response). */
+private fun tapDoc(): ByteArray = document(width = 300, height = 300, contentDescription = "Tappable Counter") {
+    setRootContentBehavior(ROOT_SCROLL_NONE, ROOT_ALIGNMENT_CENTER, ROOT_SIZING_SCALE, ROOT_SCALE_FIT)
+    box(
+        modifier = LayoutModifier()
+            .width(DimensionType.EXACT, 220f)
+            .height(DimensionType.EXACT, 120f)
+            .background(0xFFef6c00.toInt())
+            .click(),
+    ) {}
+}
+
 /** dsl_compose_card — the Compose-Creation path: a styled card via `captureSingleRemoteDocument` +
  *  `RemoteBoxLeaf` (vs the procedural `document{}` builders above). Mirrors the creation-compose anchor tests. */
 private suspend fun composeCardDoc(): ByteArray = captureSingleRemoteDocument(
@@ -131,7 +147,7 @@ val exampleCatalog: List<RcDocEntry> = listOf(
     RcDocEntry("dsl_text", "Styled Text", DocArea.CREATION_DSL, dsl { textDoc() }),
     RcDocEntry("dsl_gradient", "Gradient Fill", DocArea.CREATION_DSL, dsl { gradientDoc() }),
     RcDocEntry("dsl_clock", "Clock Face", DocArea.CREATION_DSL, dsl { clockDoc() }),
-    RcDocEntry("dsl_tap", "Tappable Counter", DocArea.CREATION_DSL, dsl { ovalDoc() }), // TODO MODIFIER_CLICK+rcInteractive
+    RcDocEntry("dsl_tap", "Tappable Counter", DocArea.CREATION_DSL, dsl { tapDoc() }),
     RcDocEntry("dsl_compose_card", "Compose-DSL Card", DocArea.CREATION_DSL, dsl { composeCardDoc() }),
     // Area B — Bundled `.rc` (ids == dev-2 server pageIds).
     RcDocEntry("rc_box", "Box", DocArea.BUNDLED_RC, bundled("c_box")),
