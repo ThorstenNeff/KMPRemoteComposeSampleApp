@@ -4,5 +4,12 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- REM-172 S5: allow cleartext HTTP to the localhost REM-173 dev server (127.0.0.1). ATS otherwise
+	     blocks non-HTTPS; NSAllowsLocalNetworking scopes the exception to loopback/local only. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

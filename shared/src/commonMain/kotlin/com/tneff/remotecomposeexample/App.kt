@@ -35,6 +35,7 @@ fun App(modifier: Modifier = Modifier) {
                 )
                 is Screen.Viewer -> ViewerScreen(
                     entry = s.entry,
+                    fromServer = s.fromServer,
                     onBack = { screen = Screen.DocList(s.entry.area) },
                 )
             }

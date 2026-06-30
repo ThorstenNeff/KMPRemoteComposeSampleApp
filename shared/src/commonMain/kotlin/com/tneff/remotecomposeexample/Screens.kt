@@ -22,6 +22,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -99,21 +100,32 @@ fun DocListScreen(area: DocArea, onEntry: (RcDocEntry, Boolean) -> Unit, onBack:
  * deterministic frame (the Maestro render gate stays static); the user opts in for the live demo. Reset to
  * off when leaving the viewer so the global flag never leaks into the next doc / the gate.
  *
- * NB: `fromServer` is carried but resolves to the native source until S5 wires the Ktor client (fail-soft).
+ * **Server mode (REM-172 S5):** when `fromServer`, the bytes come from `ServerPage(entry.id)` over dev-2's
+ * REM-173 localhost server (else the native [RcDocEntry.source]). Bytes are pre-resolved in a [produceState]
+ * with a `try/catch` so a server-down / 404 is **fail-soft** — the `rc-error` UI shows instead of crashing.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewerScreen(entry: RcDocEntry, onBack: () -> Unit) {
+fun ViewerScreen(entry: RcDocEntry, fromServer: Boolean, onBack: () -> Unit) {
     var live by remember { mutableStateOf(false) }
     LaunchedEffect(entry.id) { RcRouter.select(entry.id) }
     LaunchedEffect(live) { RcRouter.live = live }
     DisposableEffect(Unit) { onDispose { RcRouter.live = false } }
+    val source = if (fromServer) RcDocSource.ServerPage(entry.id) else entry.source
+    val load by produceState<DocLoad>(DocLoad.Loading, entry.id, fromServer) {
+        value = try {
+            DocLoad.Ready(source.resolveBytes())
+        } catch (t: Throwable) {
+            DocLoad.Failed(t.message ?: t::class.simpleName ?: "load failed")
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(entry.title) },
                 navigationIcon = { BackButton(onBack) },
                 actions = {
+                    if (fromServer) Text("⤓", modifier = Modifier.padding(end = 8.dp).testTag("rc-from-server"))
                     Text("Live", modifier = Modifier.padding(end = 4.dp))
                     Switch(checked = live, onCheckedChange = { live = it }, modifier = Modifier.testTag("rc-live-toggle"))
                 },
@@ -121,9 +133,26 @@ fun ViewerScreen(entry: RcDocEntry, onBack: () -> Unit) {
         },
     ) { pad ->
         Box(Modifier.padding(pad).fillMaxSize().testTag("rc-viewer")) {
-            RemoteComposeApp(loadRc = { _ -> entry.source.resolveBytes() })
+            when (val s = load) {
+                is DocLoad.Loading -> Text("Loading…", modifier = Modifier.padding(24.dp).testTag("rc-loading"))
+                is DocLoad.Failed -> Column(Modifier.padding(24.dp).testTag("rc-error")) {
+                    Text("Couldn't load from server", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Is the local server running? (./gradlew :server:runExampleServer)\n${s.message}",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                is DocLoad.Ready -> RemoteComposeApp(loadRc = { _ -> s.bytes })
+            }
         }
     }
+}
+
+/** Viewer load state — server (or native) bytes are pre-resolved so a failure is fail-soft, not a crash. */
+private sealed interface DocLoad {
+    data object Loading : DocLoad
+    data class Ready(val bytes: ByteArray) : DocLoad
+    data class Failed(val message: String) : DocLoad
 }
 
 @Composable

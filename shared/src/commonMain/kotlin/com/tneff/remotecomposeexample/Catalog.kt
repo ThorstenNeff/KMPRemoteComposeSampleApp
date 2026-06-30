@@ -56,8 +56,9 @@ data class RcDocEntry(val id: String, val title: String, val area: DocArea, val 
 suspend fun RcDocSource.resolveBytes(): ByteArray = when (this) {
     is RcDocSource.DslBuilder -> build()
     is RcDocSource.BundledRc -> Res.readBytes(resourcePath)
-    // S5 (Load-from-Server): Ktor-client GET {base}/rc/{pageId}. Not wired yet — surfaced as a clear error.
-    is RcDocSource.ServerPage -> error("server mode not wired yet (S5): pageId=$pageId")
+    // S5 (Load-from-Server): Ktor GET http://{host}:8080/rc/{pageId} (dev-2 REM-173). Throws on
+    // server-down / 404 → the Viewer catches it and shows the fail-soft rc-error UI.
+    is RcDocSource.ServerPage -> RcServer.loadFromServer(pageId)
 }
 
 // --- Area A — Creation-DSL builders ------------------------------------------------------------------
