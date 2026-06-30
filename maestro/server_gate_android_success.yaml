@@ -1,0 +1,17 @@
+# Server-Mode SUCCESS gate (android) — REQUIRES the local server UP:
+#   ./gradlew :server:runExampleServer -PserverPort=8080
+# Toggle server-mode → tap rc_box (TOP item, no scroll) → loads .rc over HTTP → renders.
+# (iOS: ATS NSAllowsLocalNetworking lets cleartext 127.0.0.1 through. Android emu reaches host at 10.0.2.2.)
+appId: com.tneff.remotecomposeexample
+name: "Server-Mode success (android)"
+tags: [example, server, success]
+---
+- launchApp: { clearState: true }
+- tapOn: { id: "rc-area-bundled_rc" }
+- tapOn: { id: "rc-server-toggle" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-docitem-rc_box" }
+- extendedWaitUntil: { visible: { id: "rc-rendered" }, timeout: 10000 }
+- assertVisible: { id: "rc-doc", text: "rc_box" }
+- assertNotVisible: { id: "rc-error" }
+- assertVisible: { id: "rc-draw-count", text: "^[1-9][0-9]*$" }

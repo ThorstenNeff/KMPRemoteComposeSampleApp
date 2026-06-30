@@ -1,0 +1,16 @@
+# Server-Mode FAIL-SOFT gate (android) — REQUIRES the local server DOWN (stop it / never start it).
+# Server-mode ON → tap rc_box → graceful rc-error UI, app LIVES (no crash, rc-back works).
+# ⚠️ iOS connect-timeout (NSURLError -1004) is ~10-15s → extendedWaitUntil 15s (a shorter wait RACES).
+appId: com.tneff.remotecomposeexample
+name: "Server-Mode fail-soft (android)"
+tags: [example, server, failsoft]
+---
+- launchApp: { clearState: true }
+- tapOn: { id: "rc-area-bundled_rc" }
+- tapOn: { id: "rc-server-toggle" }
+- waitForAnimationToEnd: { timeout: 2000 }
+- tapOn: { id: "rc-docitem-rc_box" }
+- extendedWaitUntil: { visible: { id: "rc-error" }, timeout: 15000 }
+- assertVisible: { id: "rc-back" }
+- tapOn: { id: "rc-back" }
+- assertVisible: { id: "rc-doclist" }
