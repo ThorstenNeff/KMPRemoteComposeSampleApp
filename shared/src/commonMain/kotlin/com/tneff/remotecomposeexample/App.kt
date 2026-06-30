@@ -1,5 +1,6 @@
 package com.tneff.remotecomposeexample
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,7 +21,7 @@ import androidx.compose.ui.platform.testTag
  */
 @Composable
 fun App(modifier: Modifier = Modifier) {
-    MaterialTheme {
+    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) RcExampleDarkColors else RcExampleLightColors) {
         Surface(modifier.fillMaxSize().testTag("rc-app-root")) {
             var screen by remember { mutableStateOf<Screen>(Screen.Menu) }
             when (val s = screen) {
