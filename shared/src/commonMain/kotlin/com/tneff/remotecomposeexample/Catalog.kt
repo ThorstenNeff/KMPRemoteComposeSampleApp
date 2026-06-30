@@ -97,12 +97,16 @@ private fun gradientDoc(): ByteArray = document(width = 300, height = 300, conte
     drawOval(left = 0f, top = 0f, right = winW(), bottom = winH())
 }
 
-/** dsl_clock — a live-seconds counter (TIME_IN_SEC → text); time-driven, distinct from the static docs. */
+/** dsl_clock — a clock FACE: a filled disc + the live-seconds text (TIME_IN_SEC). The filled disc keeps it
+ *  clearly VISIBLE even in the static frame (the time-pin shows e.g. "00"); the seconds tick under the live
+ *  toggle. (A bare text was too sparse → test-1's pixel-variance gate read it as blank; the disc fixes that.) */
 private fun clockDoc(): ByteArray = document(width = 300, height = 300, contentDescription = "Clock Face") {
     setRootContentBehavior(ROOT_SCROLL_NONE, ROOT_ALIGNMENT_CENTER, ROOT_SIZING_SCALE, ROOT_SCALE_FILL_BOUNDS)
     val cx = floatExpression(RcExpression.WINDOW_WIDTH, 0.5f, RcExpression.MUL)
     val cy = floatExpression(RcExpression.WINDOW_HEIGHT, 0.5f, RcExpression.MUL)
-    paint { color(0xff222222.toInt()); textSize(56f) }
+    paint { color(0xFFD9E2FF.toInt()) } // clock face — a filled disc (high variance, visible static)
+    drawOval(left = 0f, top = 0f, right = winW(), bottom = winH())
+    paint { color(0xFF16448F.toInt()); textSize(96f) }
     val secs = floatExpression(RcExpression.TIME_IN_SEC, 60.0f, RcExpression.MOD)
     val t = createTextFromFloat(value = secs, digitsBefore = 2, digitsAfter = 0, flags = 3)
     drawTextAnchored(textId = t, x = cx, y = cy)
